@@ -1,6 +1,7 @@
 import *  as model from './model'
 import recipeView  from './views/recipeView';
-
+import searchView from './views/searchView';
+import resultsView from './views/resultsView';
 const timeout = function (s) {
   return new Promise(function (_, reject) {
     setTimeout(function () {
@@ -19,15 +20,34 @@ const controlRecipes = async function()
   try{
     const id = window.location.hash.slice(1);
     if(!id)return;
+    console.log(id);
     recipeView.renderSpinner();
 
     await model.loadRecipe(id);    
     recipeView.render(model.state.recipe);    
   }catch(err)
   {
-    alert(err);
+    recipeView.renderError();
   }
 }
-controlRecipes();
+const controlSearchResults = async function()
+{
+  try{
+    resultsView.renderSpinner();
+    const query = searchView.getQuery();
+    if(!query)return;
+    await model.loadSearchResults(query);
+    resultsView.render(model.state.search.results);
+  }catch(err)
+  {
+    recipeView.renderError(err);
+  }
+}
 
-['haschange', 'load'].forEach(ev => window.addEventListener(ev, controlRecipes));
+
+const init = function()
+{
+  recipeView.addHandlerMethod(controlRecipes);
+  searchView.addhanlderSearch(controlSearchResults);
+}
+init();
